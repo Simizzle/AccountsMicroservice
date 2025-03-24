@@ -4,6 +4,7 @@ import com.simonmorgan.Accounts.constants.AccountsConstants;
 import com.simonmorgan.Accounts.dto.CustomerDto;
 import com.simonmorgan.Accounts.entity.Accounts;
 import com.simonmorgan.Accounts.entity.Customer;
+import com.simonmorgan.Accounts.exception.CustomerAlreadyExistsException;
 import com.simonmorgan.Accounts.mapper.CustomerMapper;
 import com.simonmorgan.Accounts.repository.AccountsRepository;
 import com.simonmorgan.Accounts.repository.CustomerRepository;
@@ -11,6 +12,7 @@ import com.simonmorgan.Accounts.service.IAccountsService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -23,6 +25,11 @@ public class AccountsServiceImpl implements IAccountsService {
     @Override
     public void createAccount(CustomerDto customerDto) {
         Customer customer = CustomerMapper.mapToCustomer(customerDto, new Customer());
+        Optional<Customer> optionalCustomer = customerRepository.findByMobileNumber(customerDto.getMobileNumber());
+
+        if(optionalCustomer.isPresent()) {
+            throw new CustomerAlreadyExistsException("Customer already registered with given mobile number " + customerDto.getMobileNumber());
+        }
         Customer savedCustomer = customerRepository.save(customer);
         accountsRepository.save(createNewAccount(savedCustomer));
     }
