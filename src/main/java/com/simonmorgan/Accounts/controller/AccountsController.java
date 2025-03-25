@@ -3,7 +3,6 @@ package com.simonmorgan.Accounts.controller;
 import com.simonmorgan.Accounts.constants.AccountsConstants;
 import com.simonmorgan.Accounts.dto.CustomerDto;
 import com.simonmorgan.Accounts.dto.ResponseDto;
-import com.simonmorgan.Accounts.exception.ResourceNotFoundException;
 import com.simonmorgan.Accounts.service.IAccountsService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
