@@ -1,10 +1,13 @@
 package com.simonmorgan.Accounts.service.impl;
 
 import com.simonmorgan.Accounts.constants.AccountsConstants;
+import com.simonmorgan.Accounts.dto.AccountsDto;
 import com.simonmorgan.Accounts.dto.CustomerDto;
 import com.simonmorgan.Accounts.entity.Accounts;
 import com.simonmorgan.Accounts.entity.Customer;
 import com.simonmorgan.Accounts.exception.CustomerAlreadyExistsException;
+import com.simonmorgan.Accounts.exception.ResourceNotFoundException;
+import com.simonmorgan.Accounts.mapper.AccountsMapper;
 import com.simonmorgan.Accounts.mapper.CustomerMapper;
 import com.simonmorgan.Accounts.repository.AccountsRepository;
 import com.simonmorgan.Accounts.repository.CustomerRepository;
@@ -52,5 +55,58 @@ public class AccountsServiceImpl implements IAccountsService {
         newAccount.setCreatedAt(LocalDateTime.now());
         newAccount.setCreatedBy("anonymous");
         return newAccount;
+    }
+
+    @Override
+    public CustomerDto fetchAccount(String mobileNumber) {
+
+        Customer customer = customerRepository
+                .findByMobileNumber(mobileNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer", "Mobile number", mobileNumber));
+
+        Accounts accounts = accountsRepository
+                .findByCustomerId(customer.getCustomerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Account", "customerId", customer.getCustomerId().toString()));
+
+        CustomerDto customerDto = CustomerMapper.mapToCustomerDto(customer, new CustomerDto());
+        customerDto.setAccountsDto(AccountsMapper.mapToAccountsDto(accounts, new AccountsDto()));
+
+        return customerDto;
+    }
+
+    /**
+     * @param customerDto - CustomerDto Object
+     * @return boolean indicating if the update of Account details is successful or not
+     */
+    @Override
+    public boolean updateAccount(CustomerDto customerDto) {
+        boolean isUpdated = false;
+        AccountsDto accountsDto = customerDto.getAccountsDto();
+        if(accountsDto != null){
+            Accounts accounts = accountsRepository.findById(accountsDto.getAccountNumber()).orElseThrow(
+                    () -> new ResourceNotFoundException("Account", "AccountNumber", accountsDto.getAccountNumber().toString())
+            );
+            AccountsMapper.mapToAccounts(accountsDto, accounts);
+            accounts = accountsRepository.save(accounts);
+
+            Long customerId = accounts.getCustomerId();
+            Customer customer = customerRepository.findById(customerId).orElseThrow(
+                    () -> new ResourceNotFoundException("Customer", "CustomerID", customerId.toString())
+            );
+            CustomerMapper.mapToCustomer(customerDto,customer);
+            customerRepository.save(customer);
+            isUpdated = true;
+        }
+        return  isUpdated;
+    }
+
+    @Override
+    public boolean deleteAccount(String mobileNumber) {
+        Customer customer = customerRepository.findByMobileNumber(mobileNumber).orElseThrow(
+                ()-> new ResourceNotFoundException("Customer", "mobile number", mobileNumber)
+        );
+        accountsRepository.deleteByCustomerId(customer.getCustomerId());
+        customerRepository.deleteById(customer.getCustomerId());
+        return true;
     }
 }
