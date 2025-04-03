@@ -11,7 +11,12 @@
 	<groupId>com.simonmorgan</groupId>
 	<artifactId>accounts</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+<<<<<<< HEAD
 	<name>accounts</name>
+=======
+	<packaging>jar</packaging>
+	<name>Accounts</name>
+>>>>>>> 1431f42 (feat: add packaging type to pom.)
 	<description>Microservice for Accounts</description>
 	<url/>
 	<licenses>
