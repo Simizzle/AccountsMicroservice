@@ -1,6 +1,7 @@
 package com.simonmorgan.Accounts.controller;
 
 import com.simonmorgan.Accounts.constants.AccountsConstants;
+import com.simonmorgan.Accounts.dto.AccountsContactDto;
 import com.simonmorgan.Accounts.dto.CustomerDto;
 import com.simonmorgan.Accounts.dto.ErrorResponseDto;
 import com.simonmorgan.Accounts.dto.ResponseDto;
@@ -42,6 +43,9 @@ public class AccountsController {
 
     @Autowired
     private Environment environment;
+
+    @Autowired
+    AccountsContactDto accountsContactDto;
 
     @Operation(
             summary = "Create Account REST API",
@@ -204,5 +208,29 @@ public class AccountsController {
     public ResponseEntity<String> getJavaVersion() {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(environment.getProperty("JAVA_HOME"));
+    }
+
+    @Operation(
+            summary = "Get contact info",
+            description = "Contact info details that can be reached in case of any issues"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "HTTP Status OK"
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "HTTP Status Internal Server Error",
+                    content = @
+                            Content(
+                            schema = @Schema(implementation = ErrorResponseDto.class)
+                    )
+            )
+    })
+    @GetMapping("/contact-info")
+    public ResponseEntity<AccountsContactDto> getContactInfo() {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(accountsContactDto);
     }
 }
